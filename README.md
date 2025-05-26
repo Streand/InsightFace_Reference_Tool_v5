@@ -19,8 +19,16 @@
 - **Easy to Use:** Clean Gradio-based UI, no coding required.
 
 ---
-##UI
+## UI
 ![Image](https://github.com/user-attachments/assets/c9c7a11a-00e3-4c99-a8d9-a21e051b9d7b)
+
+## Results
+
+![Image](https://github.com/user-attachments/assets/90437a1d-cb90-4b3a-a844-2cd5b398458e)
+
+![Image](https://github.com/user-attachments/assets/33bbc7cf-d213-4549-871a-2aada0cff6e8)
+
+
 
 ---
 
