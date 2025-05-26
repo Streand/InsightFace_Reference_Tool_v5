@@ -23,7 +23,6 @@
 ## Requirements & Installation
 
 - **Python 3.8–3.11** (recommended: 3.10+) and Microsoft C++ Build Tools [link](https://visualstudio.microsoft.com/visual-cpp-build-tools/) During installation. choose: "Desktop development with C++" workload, which includes the MSVC v142/v143 compiler.
-
 - You do **not** need to install any other packages, CUDA toolkit, or set environment variables globally.
 - **All dependencies are installed automatically in a Python virtual environment (`.venv`) when you run `install.bat`.**
 - **No system-wide Python changes are made.**
@@ -101,11 +100,35 @@ The application should open automatically in your default browser.
 
 - If the app does not open, check that your Python environment is set up correctly and that no other process is using the default port.
 - The first run may take longer as the model is downloaded (see the log in `run.bat`).
-- Please report issues—I'll do my best to fix them as soon as possible.
+- Please report issues, I'll do my best to fix them as soon as possible.
+
+
+## known issues
 - **Warning:**  
   If you see a message like  
   `NVIDIA GeForce RTX 50** with CUDA capability sm_120 is not compatible with the current PyTorch installation.`  
   you can safely ignore it. This is a false positive from PyTorch; the app should still work (even with RTX 5080). The warning is hidden by default, but may appear in some environments.
+- if you do not have a nvidia gpu (cuda) you will get an error. But the software can be used with CPU. Currently only testd with Ryzen 99500x.
+  I'm working on fixing the error.
+
+---
+
+## New Features & Fixes in v5
+
+- **AMD GPU Support:**  
+  The app now supports running on AMD GPUs (via ONNX Runtime, if available).
+- **AMD CPU Support:**  
+  Fully compatible with systems using only AMD CPUs.
+- **Intel CPU Support:**  
+  Fully compatible with systems using only Intel CPUs.
+- **Improved Device Selection:**  
+  You can now select the processing device (NVIDIA GPU, AMD GPU, Intel CPU, or AMD CPU) directly from the UI.
+- **Cleaner Progress Bar:**  
+  Real-time progress bar in the UI and improved terminal output.
+- **Better Error Handling:**  
+  Improved error messages and handling for missing models, incompatible files, and device issues.
+- **General Stability Improvements:**  
+  Various bug fixes and optimizations for smoother operation.
 
 ---
 
