@@ -24,11 +24,19 @@
 
 ## Results
 
+In this example, I tested the app with a dataset of **14,000 high-quality, real photos**.  
+I added **5 images of Anna Kendrick** as wildcards to the input images, each with different resolutions and aspect ratios (including 1 duplicate to test detection).  
+For the reference image, I used a different photo of Anna Kendrick.
+
+- **Settings:** Default similarity, requested 10 results (but only 5 wildcards were present).
+- **Result:** The tool successfully found all Anna Kendrick images, even with only 5 wildcards in the set.
+- **Performance:** The search completed in just **363 seconds** on my setup.
+
+This demonstrates the tool’s accuracy and efficiency, even with large, diverse datasets.
+
 ![Image](https://github.com/user-attachments/assets/90437a1d-cb90-4b3a-a844-2cd5b398458e)
 
 ![Image](https://github.com/user-attachments/assets/33bbc7cf-d213-4549-871a-2aada0cff6e8)
-
-
 
 ---
 
