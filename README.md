@@ -113,7 +113,7 @@ The application should open automatically in your default browser.
 
 ---
 
-## New Features & Fixes in v5
+## Planned Features & Fixes for v5.x ->
 
 - **AMD GPU Support:**  
   The app now supports running on AMD GPUs (via ONNX Runtime, if available).
