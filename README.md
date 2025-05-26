@@ -22,7 +22,8 @@
 
 ## Requirements & Installation
 
-- **Python 3.8–3.11** (recommended: 3.10+) must be installed globally.
+- **Python 3.8–3.11** (recommended: 3.10+) and Microsoft C++ Build Tools [link](https://visualstudio.microsoft.com/visual-cpp-build-tools/) During installation. choose: "Desktop development with C++" workload, which includes the MSVC v142/v143 compiler.
+
 - You do **not** need to install any other packages, CUDA toolkit, or set environment variables globally.
 - **All dependencies are installed automatically in a Python virtual environment (`.venv`) when you run `install.bat`.**
 - **No system-wide Python changes are made.**
