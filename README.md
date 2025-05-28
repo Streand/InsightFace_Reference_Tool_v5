@@ -143,12 +143,15 @@ The application should open automatically in your default browser.
   Fully compatible with systems using only Intel CPUs.
 - **Improved Device Selection:**  
   You can now select the processing device (NVIDIA GPU, AMD GPU, Intel CPU, or AMD CPU) directly from the UI.
-- **Cleaner Progress Bar:**  
-  Real-time progress bar in the UI and improved terminal output.
 - **Better Error Handling:**  
   Improved error messages and handling for missing models, incompatible files, and device issues.
 - **General Stability Improvements:**  
   Various bug fixes and optimizations for smoother operation.
+
+---
+
+## 5.0.1
+- added clear gradio temp function, made code run faster on startup
 
 ---
 
