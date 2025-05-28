@@ -1,4 +1,4 @@
-# InsightFace Reference Tool v5.0.2
+# InsightFace Reference Tool v5.1.0
 
 **InsightFace Reference Tool v5** is a user-friendly web app for finding the best-matching face images from a collection, powered by [InsightFace](https://github.com/deepinsight/insightface) facial recognition technology.
 
@@ -150,11 +150,6 @@ The application should open automatically in your default browser.
 
 ---
 
-## 5.0.1
-- added clear gradio temp function, made code run faster on startup
-
----
-
 ## Planned Features (v6 and Beyond)
 
 - **Video Support:**  
@@ -166,3 +161,10 @@ The application should open automatically in your default browser.
 ## License
 
 This project is for research and personal use. See [InsightFace license](https://github.com/deepinsight/insightface/blob/master/LICENSE) for model terms.
+
+---
+
+## change log
+
+#### 5.0.1
+- added clear gradio temp function, made code run faster on startup
