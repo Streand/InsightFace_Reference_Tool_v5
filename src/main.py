@@ -4,6 +4,8 @@ from utils.image_processing import process_images_and_zip
 import os
 import sys
 import time
+import shutil
+import tempfile
 
 # Set InsightFace model storage directory to user's home
 os.environ["INSIGHTFACE_HOME"] = os.path.join(os.path.expanduser("~"), ".insightface")
@@ -90,6 +92,18 @@ def restart_script():
     python = sys.executable
     os.execl(python, python, *sys.argv)
 
+def clean_gradio_temp():
+    temp_dir = tempfile.gettempdir()
+    gradio_temp = os.path.join(temp_dir, "gradio")
+    if os.path.exists(gradio_temp):
+        try:
+            shutil.rmtree(gradio_temp)
+            return None, None, None, "✅ Gradio temp folder cleaned."
+        except Exception as e:
+            return None, None, None, f"❌ Failed to clean Gradio temp folder: {e}"
+    else:
+        return None, None, None, "ℹ️ No Gradio temp folder found."
+
 def create_ui():
     with gr.Blocks(css="""
         /* Custom Gradio UI styles */
@@ -174,6 +188,7 @@ def create_ui():
                     clear_btn = gr.Button("Clear")
                     submit_btn = gr.Button("Submit", variant="primary")
                     unload_btn = gr.Button("Restart Script")
+                    clean_temp_btn = gr.Button("Clean Gradio Temp")  # <-- Add this line
 
         # Main content: left (inputs) and right (settings/results)
         with gr.Row():
@@ -297,6 +312,12 @@ def create_ui():
             outputs=[],
             queue=False
         )
+        clean_temp_btn.click(
+            clean_gradio_temp,
+            inputs=[],
+            outputs=[ref_image_gallery, best_image_gallery, download_link, status_message],
+            queue=False
+        )
         submit_btn.click(
             on_submit,
             inputs=[ref_image_upload, input_image_upload, min_similarity, top_k, use_avg_embedding, high_res_mode, device_dropdown],
@@ -318,6 +339,27 @@ def create_ui():
         return ui
 
 if __name__ == "__main__":
+    import time
+
+    start_time = time.time()
+    print("Starting InsightFace Reference Tool v5...")
+
+    # Example: Import heavy libraries
+    t0 = time.time()
+    import torch
+    print(f"Imported torch in {time.time() - t0:.2f} seconds")
+
+    t0 = time.time()
+    import insightface
+    print(f"Imported insightface in {time.time() - t0:.2f} seconds")
+
+    # ...repeat for other heavy imports or model loading...
+
+    t0 = time.time()
+    # model = insightface.model_zoo.get_model('buffalo_l')  # Example
+    # print(f"Loaded model in {time.time() - t0:.2f} seconds")
+
+    print(f"Total startup time: {time.time() - start_time:.2f} seconds")
     ui = create_ui()
     ui.launch(server_name="127.0.0.1", server_port=7860, share=False, inbrowser=True)
 

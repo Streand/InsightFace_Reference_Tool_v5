@@ -16,7 +16,7 @@ if %errorlevel%==1 (
 )
 
 REM Run the app and show error logs if any
-echo Running AI Recognition Helper...
+echo Running InsightFace Reference Tool v5
 echo ---------------------------------
 python src/main.py --port %PORT%
 if errorlevel 1 (
