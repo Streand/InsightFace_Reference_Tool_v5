@@ -27,14 +27,14 @@ backend = None
 current_model_name = "buffalo_l"
 current_high_res = False
 
-def load_backend(model_name="buffalo_l", high_res=False):
+def load_backend(model_name="buffalo_l", high_res=False, device="cpu"):
     """Load the backend model only if needed (lazy loading)."""
     global backend, current_model_name, current_high_res
     if backend is None or current_model_name != model_name or current_high_res != high_res:
         try:
-            print(f"Loading model: {model_name} (high_res: {high_res})...")
+            print(f"Loading model: {model_name} (high_res: {high_res}) on device: {device}...")
             from backend.insightface_backend import InsightFaceBackend
-            backend = InsightFaceBackend(model=model_name, high_res=high_res)
+            backend = InsightFaceBackend(model=model_name, high_res=high_res, device=device)
             current_model_name = model_name
             current_high_res = high_res
             print(f"Model {model_name} loaded successfully!")
@@ -64,7 +64,7 @@ def process_and_display(
         return None, None, error_message
     try:
         start_time = time.time()  # Start timing
-        current_backend = load_backend(model_name, high_res)
+        current_backend = load_backend(model_name, high_res, device=torch_device)
         total = len(folder_images) if folder_images else 1
         # Show progress bar in Gradio UI
         for idx, _ in enumerate(folder_images or [None]):
@@ -268,13 +268,18 @@ def create_ui():
                         for i in range(torch.cuda.device_count()):
                             name = torch.cuda.get_device_name(i)
                             choices.append(f"cuda:{i} ({name})")
-                    choices.append("cpu (Use CPU)")
+                    # Always add CPU as an option
+                    choices.append("cpu")
                     return choices
 
                 device_choices = get_device_choices()
+                # Default to CPU if CUDA is not available
+                default_device = device_choices[0] if device_choices else "cpu"
+                if "cuda" not in default_device:
+                    default_device = "cpu"
                 device_dropdown = gr.Dropdown(
                     choices=device_choices,
-                    value=device_choices[0],
+                    value=default_device,
                     label="Processing Device",
                     interactive=True,
                     elem_id="device-dropdown"
@@ -307,8 +312,10 @@ def create_ui():
             return clear_all()
 
         def on_submit(og_images, folder_images, min_similarity, top_k, use_avg_embedding, high_res, device, progress=gr.Progress(track_tqdm=True)):
+            # Pass the device string directly (e.g., "cpu" or "cuda:0")
+            device_str = device.split()[0] if " " in device else device
             return process_and_display(
-                og_images, folder_images, min_similarity, top_k, use_avg_embedding, "buffalo_l", high_res, device, progress
+                og_images, folder_images, min_similarity, top_k, use_avg_embedding, "buffalo_l", high_res, device_str, progress
             )
 
         high_res_mode.change(on_high_res_toggle, inputs=[high_res_mode], outputs=[status_message], queue=False)
