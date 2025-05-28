@@ -116,6 +116,21 @@ def clean_gradio_temp():
     else:
         return None, None, None, "ℹ️ No Gradio temp folder found."
 
+def get_onnxruntime_status():
+    try:
+        import pkg_resources
+        pkgs = [p.project_name.lower() for p in pkg_resources.working_set]
+        if "onnxruntime-gpu" in pkgs:
+            return "ONNX Runtime: &rarr; <b>NVIDIA GPUs (CUDA)</b>"
+        elif "onnxruntime-directml" in pkgs:
+            return "ONNX Runtime: &rarr; <b>AMD/Intel GPUs</b>"
+        elif "onnxruntime" in pkgs:
+            return "ONNX Runtime: &rarr; <b>CPU only</b>"
+        else:
+            return "ONNX Runtime: <b>Not installed</b>"
+    except Exception as e:
+        return f"ONNX Runtime: <b>Error detecting package</b> ({e})"
+
 def create_ui():
     with gr.Blocks(css="""
         /* Custom Gradio UI styles */
@@ -182,6 +197,13 @@ def create_ui():
             margin-top: 1em;
             margin-bottom: 0.5em;
         }
+        #status-message {
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            text-align: center;
+            margin-bottom: 8px;
+        }
     """) as ui:
         gr.Markdown("## InsightFace Reference Tool v5")
         gr.Markdown("""
@@ -193,14 +215,19 @@ def create_ui():
         *Note: The model will be automatically downloaded if needed. First use may take a few minutes.*
         """)
 
+        # Display GPU type
+        gr.Markdown(get_onnxruntime_status()) 
+
         # Top row: action buttons
         with gr.Row():
             with gr.Column():
+                status_message = gr.Markdown("", elem_id="status-message")  # <-- Moved here!
                 with gr.Row():
                     clear_btn = gr.Button("Clear")
                     submit_btn = gr.Button("Submit", variant="primary")
                     unload_btn = gr.Button("Restart Script")
-                    clean_temp_btn = gr.Button("Clean Gradio Temp")  # <-- Add this line
+                    clean_temp_btn = gr.Button("Clean Gradio Temp")
+                    confirm_btn = gr.Button("Confirm Clean", visible=False)
 
         # Main content: left (inputs) and right (settings/results)
         with gr.Row():
@@ -268,7 +295,13 @@ def create_ui():
                         for i in range(torch.cuda.device_count()):
                             name = torch.cuda.get_device_name(i)
                             choices.append(f"cuda:{i} ({name})")
-                    # Always add CPU as an option
+                    # Try to detect DirectML (AMD/Intel GPU on Windows)
+                    try:
+                        import onnxruntime as ort
+                        if "DirectMLExecutionProvider" in ort.get_available_providers():
+                            choices.append("directml (AMD/Intel GPU)")
+                    except ImportError:
+                        pass
                     choices.append("cpu")
                     return choices
 
@@ -284,9 +317,6 @@ def create_ui():
                     interactive=True,
                     elem_id="device-dropdown"
                 )
-
-                # Status message above the gallery, matches gallery width
-                status_message = gr.Markdown("", elem_id="status-message")
 
                 gr.Markdown("### Best Matching Images")
                 best_image_gallery = gr.Gallery(
@@ -312,8 +342,8 @@ def create_ui():
             return clear_all()
 
         def on_submit(og_images, folder_images, min_similarity, top_k, use_avg_embedding, high_res, device, progress=gr.Progress(track_tqdm=True)):
-            # Pass the device string directly (e.g., "cpu" or "cuda:0")
-            device_str = device.split()[0] if " " in device else device
+            # Accept "directml" as a valid device string
+            device_str = device.split()[0].lower() if " " in device else device.lower()
             return process_and_display(
                 og_images, folder_images, min_similarity, top_k, use_avg_embedding, "buffalo_l", high_res, device_str, progress
             )
@@ -332,10 +362,14 @@ def create_ui():
             queue=False
         )
         clean_temp_btn.click(
-            clean_gradio_temp,
+            lambda: (gr.update(visible=True), "⚠️ This will also clean other applications that uses Gradio? Click again to confirm."),
             inputs=[],
-            outputs=[ref_image_gallery, best_image_gallery, download_link, status_message],
-            queue=False
+            outputs=[confirm_btn, status_message]
+        )
+        confirm_btn.click(
+            lambda: (gr.update(visible=False), clean_gradio_temp()[3]),
+            inputs=[],
+            outputs=[confirm_btn, status_message]
         )
         submit_btn.click(
             on_submit,
@@ -361,7 +395,7 @@ if __name__ == "__main__":
     import time
 
     start_time = time.time()
-    print("Starting InsightFace Reference Tool v5...")
+    print("Starting InsightFace Reference Tool v5.2.0")
 
     # Example: Import heavy libraries
     t0 = time.time()

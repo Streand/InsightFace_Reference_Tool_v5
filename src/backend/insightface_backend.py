@@ -33,6 +33,9 @@ class InsightFaceBackend:
         if device.startswith("cuda"):
             providers = ['CUDAExecutionProvider', 'CPUExecutionProvider']
             ctx_id = 0
+        elif device.startswith("directml"):
+            providers = ['DirectMLExecutionProvider', 'CPUExecutionProvider']
+            ctx_id = -1  # DirectML does not use CUDA context
         else:
             providers = ['CPUExecutionProvider']
             ctx_id = -1

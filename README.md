@@ -135,10 +135,6 @@ The application should open automatically in your default browser.
 
 ## Planned Features & Fixes for v5.x.x ->
 
-- **AMD GPU Support:**  
-  The app now supports running on AMD GPUs (via ONNX Runtime, if available).
-- **Improved Device Selection:**  
-  You can now select the processing device (NVIDIA GPU, AMD GPU, Intel CPU, or AMD CPU) directly from the UI.
 - **Better Error Handling:**  
   Improved error messages and handling for missing models, incompatible files, and device issues.
 - **General Stability Improvements:**  
@@ -168,3 +164,9 @@ This project is for research and personal use. See [InsightFace license](https:/
 -- CUDA capabilities error / bug
 #### 5.1.0
 -- fix no cuda option error
+#### 5.2.0
+-- adding AMD support and other major code changes.
+-- add warning to clear gradio cache.
+-- adding GPU switcher
+-- better install.bat functions
+-- new info to readme
