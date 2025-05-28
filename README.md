@@ -72,7 +72,7 @@ This demonstrates the tool’s accuracy and efficiency, even with large, diverse
     ```
     - This will create a `.venv` folder, install all requirements, and download the model if needed.
     - Choose the GPU you are using.
-    - note: use 'switch_gpu.bat' to if you have installed wrong or harware change. it will uninstall the current version and install correct depeding on optiop you choose.
+    - NOTE: use 'switch_gpu.bat' to if you have installed wrong or harware change. it will uninstall the current version and install correct depeding on optiop you choose.
   
 
 3. **Start the app:**
