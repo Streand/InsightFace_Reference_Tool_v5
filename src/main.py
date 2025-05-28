@@ -6,6 +6,18 @@ import sys
 import time
 import shutil
 import tempfile
+import warnings
+import re
+
+# Suppress specific warnings
+warnings.filterwarnings("ignore", message="NVIDIA GeForce RTX.*not compatible with the current PyTorch installation")
+
+def custom_warning_filter(message, category, filename, lineno, file=None, line=None):
+    if category == UserWarning and re.search(r'NVIDIA GeForce RTX \d+ with CUDA capability sm_\d+ is not compatible', str(message)):
+        return None  # Suppress the warning
+    return True  # Show other warnings
+
+warnings.showwarning = custom_warning_filter
 
 # Set InsightFace model storage directory to user's home
 os.environ["INSIGHTFACE_HOME"] = os.path.join(os.path.expanduser("~"), ".insightface")
