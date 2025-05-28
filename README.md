@@ -1,4 +1,4 @@
-# InsightFace Reference Tool v5
+# InsightFace Reference Tool v5.0.1
 
 **InsightFace Reference Tool v5** is a user-friendly web app for finding the best-matching face images from a collection, powered by [InsightFace](https://github.com/deepinsight/insightface) facial recognition technology.
 
@@ -143,12 +143,15 @@ The application should open automatically in your default browser.
   Fully compatible with systems using only Intel CPUs.
 - **Improved Device Selection:**  
   You can now select the processing device (NVIDIA GPU, AMD GPU, Intel CPU, or AMD CPU) directly from the UI.
-- **Cleaner Progress Bar:**  
-  Real-time progress bar in the UI and improved terminal output.
 - **Better Error Handling:**  
   Improved error messages and handling for missing models, incompatible files, and device issues.
 - **General Stability Improvements:**  
   Various bug fixes and optimizations for smoother operation.
+
+---
+
+## 5.0.1
+- added clear gradio temp function, made code run faster on startup
 
 ---
 
