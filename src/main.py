@@ -362,7 +362,7 @@ def create_ui():
             queue=False
         )
         clean_temp_btn.click(
-            lambda: (gr.update(visible=True), "⚠️ This will also clean other applications that uses Gradio? Click again to confirm."),
+            lambda: (gr.update(visible=True), "⚠️ This will also clean other applications that uses Gradio Click again to confirm."),
             inputs=[],
             outputs=[confirm_btn, status_message]
         )

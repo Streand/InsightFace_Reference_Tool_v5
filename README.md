@@ -17,7 +17,7 @@
 - **Progress Bar:** Real-time progress display during processing.
 - **Download Results:** Download the best-matching images as a ZIP file.
 - **Easy to Use:** Clean Gradio-based UI, no coding required.
-
+- **Support:** For NVIDIA, AMD GPUs and CPUs.
 ---
 ## UI
 ![Image](https://github.com/user-attachments/assets/c9c7a11a-00e3-4c99-a8d9-a21e051b9d7b)
@@ -47,7 +47,6 @@ This demonstrates the tool’s accuracy and efficiency, even with large, diverse
 - **All dependencies are installed automatically in a Python virtual environment (`.venv`) when you run `install.bat`.**
 - **No system-wide Python changes are made.**
 - Supported on Windows with Python 3.8–3.11 (recommended: 3.10+).
-- CUDA 11.8 is required for GPU acceleration (the installer will fetch the correct PyTorch/torchvision wheels).
 
 ---
 
@@ -72,6 +71,9 @@ This demonstrates the tool’s accuracy and efficiency, even with large, diverse
     install.bat
     ```
     - This will create a `.venv` folder, install all requirements, and download the model if needed.
+    - Choose the GPU you are using.
+    - note: use 'switch_gpu.bat' to if you have installed wrong or harware change. it will uninstall the current version and install correct depeding on optiop you choose.
+  
 
 3. **Start the app:**
     ```
@@ -93,6 +95,9 @@ The application should open automatically in your default browser.
 - **Clear:** Clears all input and output fields.
 - **Restart Script:** Restarts the current session and opens a new browser window.
 - **Submit:** Runs the face matching process.
+- **Clean Gradio Temp:** will clear temp .gradio folder, This will also clean other applications that uses Gradio 
+- **Processing Device:** Dropdown menu for gpu / cpu you want to run the proccess with
+
 
 ---
 
@@ -158,15 +163,15 @@ This project is for research and personal use. See [InsightFace license](https:/
 
 ## change log and fixes
 
-#### 5.0.1
--- added clear gradio temp function, made code run faster on startup
-#### 5.0.2
--- CUDA capabilities error / bug
-#### 5.1.0
--- fix no cuda option error
-#### 5.2.0
--- adding AMD support and other major code changes.
--- add warning to clear gradio cache.
--- adding GPU switcher
--- better install.bat functions
--- new info to readme
+- **5.0.1**
+  - added clear gradio temp function, made code run faster on startup
+- **5.0.2**
+  - CUDA capabilities error / bug
+- **5.1.0**
+  - fix no cuda option error
+- **5.2.0**
+  - adding AMD support and other major code changes.
+  - add warning to clear gradio cache.
+  - adding GPU switcher
+  - better install.bat functions
+  - new info to readme
