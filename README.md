@@ -1,4 +1,4 @@
-# InsightFace Reference Tool v5.1.0
+# InsightFace Reference Tool v5.2.0
 
 **InsightFace Reference Tool v5** is a user-friendly web app for finding the best-matching face images from a collection, powered by [InsightFace](https://github.com/deepinsight/insightface) facial recognition technology.
 
