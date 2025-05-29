@@ -175,7 +175,7 @@ This project is for research and personal use. See [InsightFace license](https:/
   - adding GPU switcher
   - better install.bat functions
   - new info to readme
-  - **5.3.0**
+- **5.3.0**
   - multiple errors and follow up issues, after 5.2.0 should have been fixed
   - updated to InsightFace 0.7.3 -> 0.9.1
   - adding more decencies to make muli-option device work correctly
