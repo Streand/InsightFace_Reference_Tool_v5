@@ -1,4 +1,3 @@
-from fastapi import FastAPI
 import gradio as gr
 from utils.image_processing import process_images_and_zip
 import os
@@ -8,6 +7,11 @@ import shutil
 import tempfile
 import warnings
 import re
+from importlib.metadata import version
+import torch
+import onnxruntime as ort
+import insightface
+from cpu_detector import get_cpu_friendly_name, clean_cpu_name_for_ui
 
 # Suppress specific warnings
 warnings.filterwarnings("ignore", message="NVIDIA GeForce RTX.*not compatible with the current PyTorch installation")
@@ -22,7 +26,7 @@ warnings.showwarning = custom_warning_filter
 # Set InsightFace model storage directory to user's home
 os.environ["INSIGHTFACE_HOME"] = os.path.join(os.path.expanduser("~"), ".insightface")
 
-app = FastAPI()
+
 backend = None
 current_model_name = "buffalo_l"
 current_high_res = False
@@ -58,13 +62,13 @@ def process_and_display(
     og_images, folder_images, min_similarity, top_k, use_avg_embedding, model_name, high_res, device, progress=gr.Progress(track_tqdm=True)
 ):
     """Main processing function: validates input, runs backend, returns results and status."""
-    torch_device = device.split()[0]  # "cuda:0" or "cpu"
-    is_valid, error_message = validate_inputs(og_images, folder_images)
-    if not is_valid:
-        return None, None, error_message
+    # REMOVE THIS LINE:
+    # torch_device = device.split()[0]  # "cuda:0" or "cpu"
+    
+    # Use device directly - it's already been processed in on_submit()
     try:
         start_time = time.time()  # Start timing
-        current_backend = load_backend(model_name, high_res, device=torch_device)
+        current_backend = load_backend(model_name, high_res, device=device)
         total = len(folder_images) if folder_images else 1
         # Show progress bar in Gradio UI
         for idx, _ in enumerate(folder_images or [None]):
@@ -118,18 +122,74 @@ def clean_gradio_temp():
 
 def get_onnxruntime_status():
     try:
-        import pkg_resources
-        pkgs = [p.project_name.lower() for p in pkg_resources.working_set]
-        if "onnxruntime-gpu" in pkgs:
+        # Check for each onnxruntime package
+        installed_packages = []
+        for pkg in ["onnxruntime-gpu", "onnxruntime-directml", "onnxruntime"]:
+            try:
+                version(pkg)  # This will raise PackageNotFoundError if not installed
+                installed_packages.append(pkg)
+            except Exception:
+                pass
+                
+        if "onnxruntime-gpu" in installed_packages:
             return "ONNX Runtime: &rarr; <b>NVIDIA GPUs (CUDA)</b>"
-        elif "onnxruntime-directml" in pkgs:
+        elif "onnxruntime-directml" in installed_packages:
             return "ONNX Runtime: &rarr; <b>AMD/Intel GPUs</b>"
-        elif "onnxruntime" in pkgs:
+        elif "onnxruntime" in installed_packages:
             return "ONNX Runtime: &rarr; <b>CPU only</b>"
         else:
             return "ONNX Runtime: <b>Not installed</b>"
     except Exception as e:
         return f"ONNX Runtime: <b>Error detecting package</b> ({e})"
+
+def get_cpu_model_name():
+    """Get CPU model name across different platforms"""
+    import platform
+    
+    system = platform.system()
+    
+    try:
+        if system == "Windows":
+            import subprocess
+            result = subprocess.check_output(["wmic", "cpu", "get", "name"], text=True)
+            return result.strip().split("\n")[1].strip()
+        
+        elif system == "Linux":
+            with open("/proc/cpuinfo", "r") as f:
+                for line in f:
+                    if "model name" in line:
+                        return line.split(":")[1].strip()
+            return "Unknown CPU"
+            
+        elif system == "Darwin":  # macOS
+            import subprocess
+            result = subprocess.check_output(["sysctl", "-n", "machdep.cpu.brand_string"], text=True)
+            return result.strip()
+            
+        else:
+            return "Unknown CPU"
+    except Exception:
+        return "Unknown CPU"
+
+def get_device_choices():
+    choices = []
+    if torch.cuda.is_available():
+        for i in range(torch.cuda.device_count()):
+            name = torch.cuda.get_device_name(i)
+            choices.append(f"cuda:{i} ({name})")
+    # Try to detect DirectML (AMD/Intel GPU on Windows)
+    try:
+        if "DmlExecutionProvider" in ort.get_available_providers():
+            choices.append("directml *Direct Machine Learning*")
+    except ImportError:
+        pass
+    
+    # Get CPU model name - clean it up for UI display
+    cpu_name = get_cpu_friendly_name()
+    clean_name = clean_cpu_name_for_ui(cpu_name)
+    choices.append(f"cpu ({clean_name})")
+    
+    return choices
 
 def create_ui():
     with gr.Blocks(css="""
@@ -288,28 +348,25 @@ def create_ui():
                     value=False,
                     info="Uses higher resolution detection (768px)"
                 )
-                import torch
-                def get_device_choices():
-                    choices = []
-                    if torch.cuda.is_available():
-                        for i in range(torch.cuda.device_count()):
-                            name = torch.cuda.get_device_name(i)
-                            choices.append(f"cuda:{i} ({name})")
-                    # Try to detect DirectML (AMD/Intel GPU on Windows)
-                    try:
-                        import onnxruntime as ort
-                        if "DirectMLExecutionProvider" in ort.get_available_providers():
-                            choices.append("directml (AMD/Intel GPU)")
-                    except ImportError:
-                        pass
-                    choices.append("cpu")
-                    return choices
-
+                
                 device_choices = get_device_choices()
-                # Default to CPU if CUDA is not available
-                default_device = device_choices[0] if device_choices else "cpu"
-                if "cuda" not in default_device:
-                    default_device = "cpu"
+                # Set default device correctly
+                default_device = None
+                # First try to pick CUDA if available
+                for choice in device_choices:
+                    if choice.startswith("cuda:"):
+                        default_device = choice
+                        break
+                # If no CUDA device found, pick the CPU option
+                if default_device is None:
+                    for choice in device_choices:
+                        if choice.startswith("cpu"):
+                            default_device = choice
+                            break
+                # Fallback to first available choice if somehow nothing matched
+                if default_device is None and device_choices:
+                    default_device = device_choices[0]
+                
                 device_dropdown = gr.Dropdown(
                     choices=device_choices,
                     value=default_device,
@@ -342,8 +399,13 @@ def create_ui():
             return clear_all()
 
         def on_submit(og_images, folder_images, min_similarity, top_k, use_avg_embedding, high_res, device, progress=gr.Progress(track_tqdm=True)):
-            # Accept "directml" as a valid device string
-            device_str = device.split()[0].lower() if " " in device else device.lower()
+            # Extract the device prefix (cpu, cuda:N, directml) from the selected option
+            device_str = device.split()[0].lower()  # This will get "cpu", "cuda:0", or "directml"
+            
+            # Handle the case where directml has asterisks around "Direct Machine Learning"
+            if "*" in device and "directml" in device.lower():
+                device_str = "directml"
+                
             return process_and_display(
                 og_images, folder_images, min_similarity, top_k, use_avg_embedding, "buffalo_l", high_res, device_str, progress
             )
@@ -395,15 +457,13 @@ if __name__ == "__main__":
     import time
 
     start_time = time.time()
-    print("Starting InsightFace Reference Tool v5.2.0")
+    print("Starting InsightFace Reference Tool v5.3.0")
 
     # Example: Import heavy libraries
     t0 = time.time()
-    import torch
     print(f"Imported torch in {time.time() - t0:.2f} seconds")
 
     t0 = time.time()
-    import insightface
     print(f"Imported insightface in {time.time() - t0:.2f} seconds")
 
     # ...repeat for other heavy imports or model loading...

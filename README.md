@@ -1,6 +1,6 @@
-# InsightFace Reference Tool v5.2.0
+# InsightFace Reference Tool v5.3.0
 
-**InsightFace Reference Tool v5** is a user-friendly web app for finding the best-matching face images from a collection, powered by [InsightFace](https://github.com/deepinsight/insightface) facial recognition technology.
+**InsightFace Reference Tool v5.3.0** is a user-friendly web app for finding the best-matching face images from a collection, powered by [InsightFace](https://github.com/deepinsight/insightface) facial recognition technology.
 
 ---
 
@@ -42,7 +42,7 @@ This demonstrates the tool’s accuracy and efficiency, even with large, diverse
 
 ## Requirements & Installation
 
-- **Python 3.8–3.11** (recommended: 3.10+) and Microsoft C++ Build Tools [link](https://visualstudio.microsoft.com/visual-cpp-build-tools/) During installation. choose: "Desktop development with C++" workload, which includes the MSVC v142/v143 compiler.
+- **Python 3.10.** and Microsoft C++ Build Tools [link](https://visualstudio.microsoft.com/visual-cpp-build-tools/) During installation. choose: "Desktop development with C++" workload, which includes the MSVC v142/v143 compiler.
 - You do **not** need to install any other packages, CUDA toolkit, or set environment variables globally.
 - **All dependencies are installed automatically in a Python virtual environment (`.venv`) when you run `install.bat`.**
 - **No system-wide Python changes are made.**
@@ -175,3 +175,11 @@ This project is for research and personal use. See [InsightFace license](https:/
   - adding GPU switcher
   - better install.bat functions
   - new info to readme
+  - **5.3.0**
+  - multiple errors and follow up issues, after 5.2.0 should have been fixed
+  - updated to InsightFace 0.7.3 -> 0.9.1
+  - adding more decencies to make muli-option device work correctly
+  - corrected pathing issue for model downloader
+  - adding better logs during installation
+  - isolating requirement specific for gpu option
+  - added CPU name detector

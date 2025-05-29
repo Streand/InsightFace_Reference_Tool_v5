@@ -1,4 +1,4 @@
-# only install onnxruntime depeding on the GPU type.
+# only install onnxruntime depending on the GPU type.
 # Nvidia = onnxruntime-gpu==1.15.1
 # AMD = onnxruntime-directml
 # CPU only = onnxruntime
@@ -6,17 +6,20 @@
 # Use # to comment out the package you don't need.
 # or use switch_gpu.bat 
 
+setuptools>=65.5.0
+gradio_client
 gradio
-insightface==0.7.3
+
+# Core dependencies
 numpy==1.26.4
 opencv-python
-Pillow==9.0.0
-torch==2.0.1+cu118
-torchvision==0.15.2+cu118
+Pillow==9.5.0
+# torch==2.2.2+cu118           #fixed ealier in install.bat
+# torchvision==0.17.2+cu118    #fixed ealier in install.bat
 # onnxruntime-gpu==1.15.1      # For NVIDIA GPUs (CUDA)
 # onnxruntime-directml         # For AMD/Intel GPUs (DirectML on Windows)
 # onnxruntime                  # For CPU only
 scikit-image==0.19.3
 matplotlib==3.5.1
 scikit-learn
-fastapi
+opencv-python

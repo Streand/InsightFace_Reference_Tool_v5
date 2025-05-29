@@ -23,7 +23,7 @@ if %errorlevel%==1 (
 )
 
 REM Run the app and show error logs if any
-echo Running InsightFace Reference Tool v5.2.0
+echo Running InsightFace Reference Tool v5.3.0
 echo ---------------------------------
 python src/main.py --port %PORT%
 if errorlevel 1 (
