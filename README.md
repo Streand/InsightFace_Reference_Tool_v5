@@ -1,6 +1,6 @@
-# InsightFace Reference Tool v5.3.0
+# InsightFace Reference Tool v5.3.1
 
-**InsightFace Reference Tool v5.3.0** is a user-friendly web app for finding the best-matching face images from a collection, powered by [InsightFace](https://github.com/deepinsight/insightface) facial recognition technology.
+**InsightFace Reference Tool v5.3.1** is a user-friendly web app for finding the best-matching face images from a collection, powered by [InsightFace](https://github.com/deepinsight/insightface) facial recognition technology.
 
 ---
 
@@ -183,3 +183,5 @@ This project is for research and personal use. See [InsightFace license](https:/
   - adding better logs during installation
   - isolating requirement specific for gpu option
   - added CPU name detector
+- **5.3.1**
+  -  fixed: port already in use

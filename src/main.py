@@ -457,7 +457,7 @@ if __name__ == "__main__":
     import time
 
     start_time = time.time()
-    print("Starting InsightFace Reference Tool v5.3.0")
+    print("Starting InsightFace Reference Tool v5.3.1")
 
     # Example: Import heavy libraries
     t0 = time.time()
@@ -474,5 +474,5 @@ if __name__ == "__main__":
 
     print(f"Total startup time: {time.time() - start_time:.2f} seconds")
     ui = create_ui()
-    ui.launch(server_name="127.0.0.1", server_port=7860, share=False, inbrowser=True)
+    ui.launch(server_name="127.0.0.1", share=False, inbrowser=True)
 
