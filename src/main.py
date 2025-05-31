@@ -88,16 +88,13 @@ def process_and_display(
         return best_images, zip_path, status
     except ValueError as e:
         error_msg = str(e)
-        if "download" in error_msg.lower():
-            return None, None, f"Error downloading model: {error_msg}\n\nCheck your internet connection."
-        elif "incompatible" in error_msg.lower():
-            return None, None, f"Model structure error: {error_msg}\n\nThe model files were downloaded but are incompatible with your InsightFace version."
-        return None, None, f"Error: {error_msg}"
+        if "No valid embeddings found" in error_msg:
+            return [], None, "No faces were detected in your reference images. Please try different images with clear, visible faces."
+        else:
+            return [], None, f"Error: {error_msg}"
+            
     except Exception as e:
-        error_msg = str(e)
-        if "Failed downloading url" in error_msg:
-            return None, None, f"Error: Model download failed. The model '{model_name}' appears to be unavailable."
-        return None, None, f"Unexpected error: {error_msg}"
+        return [], None, f"Unexpected error: {str(e)}"
 
 def clear_all():
     """Clear all outputs in the UI."""
@@ -457,7 +454,7 @@ if __name__ == "__main__":
     import time
 
     start_time = time.time()
-    print("Starting InsightFace Reference Tool v5.3.1")
+    print("Starting InsightFace Reference Tool v5.3.2")
 
     # Example: Import heavy libraries
     t0 = time.time()

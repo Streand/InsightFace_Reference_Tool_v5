@@ -1,6 +1,6 @@
-# InsightFace Reference Tool v5.3.1
+# InsightFace Reference Tool v5.3.2
 
-**InsightFace Reference Tool v5.3.1** is a user-friendly web app for finding the best-matching face images from a collection, powered by [InsightFace](https://github.com/deepinsight/insightface) facial recognition technology.
+**InsightFace Reference Tool v5.3.2** is a user-friendly web app for finding the best-matching face images from a collection, powered by [InsightFace](https://github.com/deepinsight/insightface) facial recognition technology.
 
 ---
 
@@ -46,7 +46,7 @@ This demonstrates the tool’s accuracy and efficiency, even with large, diverse
 - You do **not** need to install any other packages, CUDA toolkit, or set environment variables globally.
 - **All dependencies are installed automatically in a Python virtual environment (`.venv`) when you run `install.bat`.**
 - **No system-wide Python changes are made.**
-- Supported on Windows with Python 3.8–3.11 (recommended: 3.10+).
+- Supported on Windows with Python 3.10.*
 
 ---
 
@@ -127,15 +127,6 @@ The application should open automatically in your default browser.
 - The first run may take longer as the model is downloaded (see the log in `run.bat`).
 - Please report issues, I'll do my best to fix them as soon as possible.
 
-
-## known issues
-- **Warning:**  
-  If you see a message like  
-  `NVIDIA GeForce RTX 50** with CUDA capability sm_120 is not compatible with the current PyTorch installation.`  
-  you can safely ignore it. This is a false positive from PyTorch; the app should still work (even with RTX 5080). The warning is hidden by default, but may appear in some environments.
-- if you do not have a nvidia gpu (cuda) you will get an error. But the software can be used with CPU. Currently only testd with Ryzen 99500x.
-  I'm working on fixing the error.
-
 ---
 
 ## Planned Features & Fixes for v5.x.x ->
@@ -185,3 +176,5 @@ This project is for research and personal use. See [InsightFace license](https:/
   - added CPU name detector
 - **5.3.1**
   -  fixed: port already in use
+- **5.3.2**
+  -  added better error in UI

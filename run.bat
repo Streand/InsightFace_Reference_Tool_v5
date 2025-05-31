@@ -13,7 +13,7 @@ python -c "import pkg_resources; print([p.project_name + '==' + p.version for p 
 echo ---------------------------------
 
 REM Run the app and show error logs if any
-echo Running InsightFace Reference Tool v5.3.1
+echo Running InsightFace Reference Tool v5.3.2
 echo ---------------------------------
 python src/main.py
 if errorlevel 1 (
