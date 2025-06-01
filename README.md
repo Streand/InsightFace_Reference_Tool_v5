@@ -177,4 +177,5 @@ This project is for research and personal use. See [InsightFace license](https:/
 - **5.3.1**
   -  fixed: port already in use
 - **5.3.2**
-  -  added better error in UI
+  - added better error in UI
+  - added Face Analysis Visualization in UI

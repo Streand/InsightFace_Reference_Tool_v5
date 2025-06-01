@@ -1,5 +1,6 @@
 import gradio as gr
 from utils.image_processing import process_images_and_zip
+from utils.face_visualization import visualize_face_analysis, create_analysis_animation
 import os
 import sys
 import time
@@ -7,10 +8,13 @@ import shutil
 import tempfile
 import warnings
 import re
+import uuid
 from importlib.metadata import version
 import torch
 import onnxruntime as ort
 import insightface
+import imageio
+import numpy as np
 from cpu_detector import get_cpu_friendly_name, clean_cpu_name_for_ui
 
 # Suppress specific warnings
@@ -98,7 +102,7 @@ def process_and_display(
 
 def clear_all():
     """Clear all outputs in the UI."""
-    return None, None, None, None
+    return None, None, None, None, None, None, None, None  # Added two more Nones for file uploads
 
 def restart_script():
     """Restart the script (used for the 'Restart Script' button)."""
@@ -187,6 +191,57 @@ def get_device_choices():
     choices.append(f"cpu ({clean_name})")
     
     return choices
+
+def combine_animations(animation_paths, output_path):
+    """Combines multiple GIF animations side by side into one"""
+    if not animation_paths or len(animation_paths) == 0:
+        return None
+        
+    # If just one animation, return it directly
+    if len(animation_paths) == 1:
+        return animation_paths[0]
+        
+    # Load all animations
+    animations = []
+    for path in animation_paths:
+        try:
+            frames = imageio.mimread(path)
+            animations.append(frames)
+        except Exception as e:
+            print(f"Error loading animation {path}: {e}")
+    
+    if not animations:
+        return None
+    
+    # Get the frame count (use the shortest animation)
+    min_frames = min(len(anim) for anim in animations)
+    
+    # Get dimensions
+    heights = [anim[0].shape[0] for anim in animations]
+    widths = [anim[0].shape[1] for anim in animations]
+    max_height = max(heights)
+    total_width = sum(widths)
+    
+    # Create combined frames
+    combined_frames = []
+    for i in range(min_frames):
+        # Create blank canvas
+        combined = np.ones((max_height, total_width, 3), dtype=np.uint8) * 255
+        
+        # Add each animation frame
+        x_offset = 0
+        for j, anim in enumerate(animations):
+            h, w = anim[i].shape[:2]
+            # Center vertically
+            y_offset = (max_height - h) // 2
+            combined[y_offset:y_offset+h, x_offset:x_offset+w] = anim[i]
+            x_offset += w
+            
+        combined_frames.append(combined)
+    
+    # Save combined animation
+    imageio.mimsave(output_path, combined_frames, format='GIF', duration=10.0, loop=0)
+    return output_path
 
 def create_ui():
     with gr.Blocks(css="""
@@ -345,7 +400,12 @@ def create_ui():
                     value=False,
                     info="Uses higher resolution detection (768px)"
                 )
-                
+                show_visualization = gr.Checkbox(
+                    label="Show Face Analysis Visualization", 
+                    value=True,  # Set to True to enable by default
+                    info="Display face detection details (box, landmarks, etc.)"
+                )
+
                 device_choices = get_device_choices()
                 # Set default device correctly
                 default_device = None
@@ -388,6 +448,23 @@ def create_ui():
                     elem_id="download-link"
                 )
 
+        # KEEP the complete visualization section (around line 475)
+        # Just make sure it has this syntax (no visible=False):
+        with gr.Row() as viz_row:
+            with gr.Column(scale=1):
+                gr.Markdown("### Face Analysis Visualization")
+                viz_gallery = gr.Gallery(
+                    label="Analysis Steps",
+                    show_label=False,
+                    columns=3,
+                    height=300,
+                    object_fit="contain"
+                )
+                viz_animation = gr.Image(
+                    label="Analysis Animation",
+                    type="filepath"
+                )
+
         # UI logic: handlers for toggles, buttons, and uploads
         def on_high_res_toggle(checked):
             return "High-resolution mode enabled." if checked else "High-resolution mode disabled."
@@ -395,25 +472,72 @@ def create_ui():
         def on_clear():
             return clear_all()
 
-        def on_submit(og_images, folder_images, min_similarity, top_k, use_avg_embedding, high_res, device, progress=gr.Progress(track_tqdm=True)):
-            # Extract the device prefix (cpu, cuda:N, directml) from the selected option
-            device_str = device.split()[0].lower()  # This will get "cpu", "cuda:0", or "directml"
-            
-            # Handle the case where directml has asterisks around "Direct Machine Learning"
+        def on_submit(og_images, folder_images, min_similarity, top_k, use_avg_embedding, 
+                     high_res, device, show_viz=False, progress=gr.Progress(track_tqdm=True)):
+            # Extract device str as before
+            device_str = device.split()[0].lower()
             if "*" in device and "directml" in device.lower():
                 device_str = "directml"
+            
+            # Handle visualization if enabled and we have reference images
+            if show_viz and og_images:
+                # Create temp directory for visualization outputs
+                viz_temp_dir = os.path.join(tempfile.gettempdir(), "insightface_viz")
+                os.makedirs(viz_temp_dir, exist_ok=True)
                 
-            return process_and_display(
-                og_images, folder_images, min_similarity, top_k, use_avg_embedding, "buffalo_l", high_res, device_str, progress
-            )
+                # Load backend for visualization
+                viz_backend = load_backend("buffalo_l", high_res, device_str)
+                
+                # Process all reference images, limited to first 5 for performance
+                all_viz_results = []
+                animation_paths = []
+                max_refs = min(len(og_images), 5)  # Process up to 5 reference images
+                
+                for i, ref_img in enumerate(og_images[:max_refs]):
+                    # Generate visualizations for each reference image
+                    viz_results = visualize_face_analysis(ref_img, viz_backend, viz_temp_dir)
+                    if viz_results:  # Only add if face was detected
+                        # Create animation for this reference
+                        anim_path = os.path.join(viz_temp_dir, f"face_analysis_{i}_{uuid.uuid4()}.gif")
+                        anim_path = create_analysis_animation(viz_results, anim_path)
+                        animation_paths.append(anim_path)
+                        
+                        # Add to results with filename as caption
+                        ref_filename = os.path.basename(ref_img)
+                        for img, caption in viz_results:
+                            all_viz_results.append((img, f"Ref {i+1}: {caption}"))
+        
+                # Combine all animations side by side
+                combined_path = os.path.join(viz_temp_dir, f"combined_{uuid.uuid4()}.gif")
+                combined_path = combine_animations(animation_paths, combined_path)
+                
+                # Process inputs as usual
+                best_images, zip_path, status = process_and_display(
+                    og_images, folder_images, min_similarity, top_k, 
+                    use_avg_embedding, "buffalo_l", high_res, device_str, progress
+                )
+                
+                return all_viz_results, combined_path, best_images, zip_path, status
+            else:
+                # Skip visualization
+                best_images, zip_path, status = process_and_display(
+                    og_images, folder_images, min_similarity, top_k, 
+                    use_avg_embedding, "buffalo_l", high_res, device_str, progress
+                )
+                
+                return None, None, best_images, zip_path, status
 
         high_res_mode.change(on_high_res_toggle, inputs=[high_res_mode], outputs=[status_message], queue=False)
         clear_btn.click(
             on_clear, 
             inputs=[], 
-            outputs=[ref_image_gallery, best_image_gallery, download_link, status_message],
+            outputs=[
+                viz_gallery, viz_animation, 
+                ref_image_gallery, best_image_gallery, download_link, status_message,
+                ref_image_upload, input_image_upload  # Add these two components
+            ],
             queue=False
-        )
+)
         unload_btn.click(
             lambda: restart_script(),
             inputs=[],
@@ -432,8 +556,15 @@ def create_ui():
         )
         submit_btn.click(
             on_submit,
-            inputs=[ref_image_upload, input_image_upload, min_similarity, top_k, use_avg_embedding, high_res_mode, device_dropdown],
-            outputs=[best_image_gallery, download_link, status_message],
+            inputs=[
+                ref_image_upload, input_image_upload, min_similarity, 
+                top_k, use_avg_embedding, high_res_mode, device_dropdown,
+                show_visualization  # Add the new checkbox
+            ],
+            outputs=[
+                viz_gallery, viz_animation,  # Add new outputs
+                best_image_gallery, download_link, status_message
+            ],
             queue=True  # Enable Gradio progress bar
         )
         ref_image_upload.upload(
@@ -447,6 +578,12 @@ def create_ui():
             inputs=[input_image_upload],
             outputs=[best_image_gallery, download_link, status_message],
             queue=False
+        )
+        # Add handler to show/hide viz_row based on checkbox
+        show_visualization.change(
+            lambda show: gr.update(visible=show),
+            inputs=[show_visualization],
+            outputs=[viz_row]
         )
         return ui
 
